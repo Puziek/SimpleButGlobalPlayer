@@ -4,8 +4,7 @@ PlaylistModel::PlaylistModel(QObject *parent)
     : QAbstractListModel(parent)
 {
     playlist = new QMediaPlaylist();
-    playlist->addMedia(QUrl("C:/Users/kamil.puzio/Downloads/movie.wmv"));
-    playlist->addMedia(QUrl("C:/Users/kamil.puzio/Downloads/rapapara.mp3"));
+    setPlayList(playlist);
 }
 
 PlaylistModel::~PlaylistModel()
@@ -40,7 +39,38 @@ QMediaPlaylist* PlaylistModel::getPlaylist()
 
 void PlaylistModel::setPlayList(QMediaPlaylist* newPlaylist)
 {
+    disconnect(playlist, &QMediaPlaylist::mediaAboutToBeInserted, this, &PlaylistModel::beginInsertItems);
+    disconnect(playlist, &QMediaPlaylist::mediaInserted, this, &PlaylistModel::endInsertItems);
+    disconnect(playlist, &QMediaPlaylist::mediaAboutToBeRemoved, this, &PlaylistModel::beginRemoveItems);
+    disconnect(playlist, &QMediaPlaylist::mediaRemoved, this, &PlaylistModel::endRemoveItems);
+
     beginResetModel();
     playlist = newPlaylist;
+
+    connect(playlist, &QMediaPlaylist::mediaAboutToBeInserted, this, &PlaylistModel::beginInsertItems);
+    connect(playlist, &QMediaPlaylist::mediaInserted, this, &PlaylistModel::endInsertItems);
+    connect(playlist, &QMediaPlaylist::mediaAboutToBeRemoved, this, &PlaylistModel::beginRemoveItems);
+    connect(playlist, &QMediaPlaylist::mediaRemoved, this, &PlaylistModel::endRemoveItems);
+
     endResetModel();
+}
+
+void PlaylistModel::beginInsertItems(int start, int end)
+{
+    beginInsertRows(QModelIndex(), start, end);
+}
+
+void PlaylistModel::endInsertItems()
+{
+    endInsertRows();
+}
+
+void PlaylistModel::beginRemoveItems(int start, int end)
+{
+    beginRemoveRows(QModelIndex(), start, end);
+}
+
+void PlaylistModel::endRemoveItems()
+{
+    endRemoveRows();
 }

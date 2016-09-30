@@ -17,11 +17,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mediaplayer.cpp \
     playlistmodel.cpp \
-    playercontrols.cpp
+    playercontrols.cpp \
+    videowidget.cpp
 
 HEADERS  += mediaplayer.h \
     playlistmodel.h \
-    playercontrols.h
+    playercontrols.h \
+    videowidget.h
 
 FORMS    += mediaplayer.ui \
     playercontrols.ui

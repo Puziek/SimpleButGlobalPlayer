@@ -9,6 +9,8 @@
 #include <QMediaPlaylist>
 #include <QVideoWidget>
 #include <QDateTime>
+#include <QFileDialog>
+#include <QStandardPaths>
 
 namespace Ui {
 class MediaPlayer;
@@ -23,6 +25,13 @@ public:
     ~MediaPlayer();
 
     void updatePositionInfo();
+
+public slots:
+    void startMedia(const QModelIndex& index);
+    void openMedia();
+    void removeSelectedMedia();
+    void moveUpSelected();
+    void moveDownSelected();
 
 private:
     Ui::MediaPlayer *ui;

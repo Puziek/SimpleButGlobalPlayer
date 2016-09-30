@@ -18,6 +18,11 @@ public:
     QMediaPlaylist* getPlaylist();
     void setPlayList(QMediaPlaylist* newPlaylist);
 
+public slots:
+    void beginInsertItems(int start, int end);
+    void endInsertItems();
+    void beginRemoveItems(int, int end);
+    void endRemoveItems();
 
 private:
     QMediaPlaylist* playlist;

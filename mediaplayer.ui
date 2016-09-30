@@ -18,7 +18,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QVideoWidget" name="vw_player" native="true"/>
+       <widget class="VideoWidget" name="vw_player" native="true"/>
       </item>
       <item>
        <widget class="QListView" name="lv_media">
@@ -28,6 +28,9 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="defaultDropAction">
+         <enum>Qt::MoveAction</enum>
+        </property>
        </widget>
       </item>
      </layout>
@@ -36,6 +39,9 @@
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <widget class="QSlider" name="hs_position">
+        <property name="pageStep">
+         <number>0</number>
+        </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -44,7 +50,7 @@
       <item>
        <widget class="QLabel" name="l_mediaTime">
         <property name="text">
-         <string>00::00 / 00::00</string>
+         <string>00:00:00 / 00:00:00</string>
         </property>
        </widget>
       </item>
@@ -71,6 +77,29 @@
      <height>25</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menuRemove_from_playlist">
+     <property name="title">
+      <string>Remove from playlist</string>
+     </property>
+     <addaction name="actionRemoveAll"/>
+     <addaction name="actionRemoveSelected"/>
+    </widget>
+    <addaction name="actionOpen"/>
+    <addaction name="menuRemove_from_playlist"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionMoveUp"/>
+    <addaction name="actionMoveDown"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -81,19 +110,44 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionRemoveAll">
+   <property name="text">
+    <string>All</string>
+   </property>
+  </action>
+  <action name="actionRemoveSelected">
+   <property name="text">
+    <string>Selected</string>
+   </property>
+  </action>
+  <action name="actionMoveUp">
+   <property name="text">
+    <string>Move Up</string>
+   </property>
+  </action>
+  <action name="actionMoveDown">
+   <property name="text">
+    <string>Move Down</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>QVideoWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">qvideowidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>PlayerControls</class>
    <extends>QWidget</extends>
    <header location="global">playercontrols.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>VideoWidget</class>
+   <extends>QWidget</extends>
+   <header>videowidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

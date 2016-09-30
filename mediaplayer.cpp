@@ -8,6 +8,9 @@ MediaPlayer::MediaPlayer(QWidget *parent) :
     ui->setupUi(this);
     playlistModel = new PlaylistModel();
     ui->lv_media->setModel(playlistModel);
+    ui->lv_media->setDragDropMode(QAbstractItemView::InternalMove);
+    ui->lv_media->setDragDropOverwriteMode(false);
+    ui->lv_media->setDefaultDropAction(Qt::MoveAction);
 
     player = new QMediaPlayer;
     player->setPlaylist(playlistModel->getPlaylist());
@@ -44,9 +47,7 @@ MediaPlayer::MediaPlayer(QWidget *parent) :
     connect(ui->pc_controlPanel, &PlayerControls::volumeChanged, player, &QMediaPlayer::setVolume);
     connect(ui->pc_controlPanel, &PlayerControls::muted, player, &QMediaPlayer::setMuted);
 
-    /*connect(ui->hs_position, &QSlider::sliderMoved, this, [this] {
-        qDebug() << ui->hs_position->value();
-    });*/
+    connect(ui->lv_media, &QListView::activated, this, &MediaPlayer::startMedia);
 
     connect(ui->pc_controlPanel, &PlayerControls::previous, player, [this] {
         (player->position() >= 5000 || player->position() <= 1000) ? player->playlist()->previous() : player->setPosition(0);
@@ -55,6 +56,22 @@ MediaPlayer::MediaPlayer(QWidget *parent) :
     connect(ui->hs_position, &QSlider::sliderMoved, this, [this] (int sec) {
         player->setPosition(sec * 1000);
     });
+
+    connect(ui->actionOpen, &QAction::triggered, this, &MediaPlayer::openMedia);
+    connect(ui->actionRemoveAll, &QAction::triggered, this, [this] {
+        for (int media = player->playlist()->mediaCount() - 1; media >= 0; --media) {
+            player->playlist()->removeMedia(media);
+        }
+    });
+    connect(ui->actionRemoveSelected, &QAction::triggered, this, &MediaPlayer::removeSelectedMedia);
+    connect(ui->actionMoveDown, &QAction::triggered, this,&MediaPlayer::moveDownSelected);
+    connect(ui->actionMoveUp, &QAction::triggered, this,&MediaPlayer::moveUpSelected);
+
+    QStringList arguments = QApplication::arguments();
+    if (arguments.count() > 1) {
+        player->playlist()->addMedia(QMediaContent(QUrl(arguments[1])));
+        player->play();
+    }
 
     ui->hs_position->setStyleSheet("QSlider::groove:horizontal {"
                                    "border: 1px solid #999999;"
@@ -94,4 +111,69 @@ void MediaPlayer::updatePositionInfo()
 {
     ui->l_mediaTime->setText(QString(QDateTime::fromTime_t(ui->hs_position->value()).toUTC().toString("hh:mm:ss") + "/" +
                                      QDateTime::fromTime_t(currMediaDuration).toUTC().toString("hh:mm:ss")));
+}
+
+void MediaPlayer::startMedia(const QModelIndex &index)
+{
+    if (index.isValid()) {
+        player->playlist()->setCurrentIndex(index.row());
+        player->play();
+    }
+}
+
+void MediaPlayer::openMedia()
+{
+    QFileDialog fileDialog(this);
+    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
+    fileDialog.setWindowTitle(tr("Open Files"));
+    fileDialog.setFileMode(QFileDialog::ExistingFiles);
+
+    QStringList filters;
+    filters << "Video (*.wmv)"
+            << "Audio (*.mp3)"
+            << "Image files (*.png *.gif *.jpg)";
+    fileDialog.setNameFilters(filters);
+
+    QStringList supportedMimeTypes = player->supportedMimeTypes();
+
+    if (!supportedMimeTypes.isEmpty()) {
+        fileDialog.setMimeTypeFilters(supportedMimeTypes);
+    }
+
+    fileDialog.setDirectory(QStandardPaths::standardLocations(QStandardPaths::MoviesLocation).value(0, QDir::homePath()));
+
+    if (fileDialog.exec() == QDialog::Accepted) {
+        for(const QUrl& url : fileDialog.selectedUrls()) {
+            player->playlist()->addMedia(url);
+        }
+        player->playlist()->setCurrentIndex(player->playlist()->mediaCount() - 1);
+        player->play();
+    }
+}
+
+void MediaPlayer::removeSelectedMedia()
+{
+    for (const QModelIndex& index : ui->lv_media->selectionModel()->selectedIndexes()) {
+        player->playlist()->removeMedia(index.row());
+    }
+}
+
+void MediaPlayer::moveUpSelected()
+{
+    for (const QModelIndex& index : ui->lv_media->selectionModel()->selectedIndexes()) {
+        QMediaContent temp_ =  player->playlist()->media(index.row());
+        player->playlist()->removeMedia(index.row());
+        player->playlist()->insertMedia(index.row() - 1, temp_);
+        player->playlist()->setCurrentIndex(index.row() - 1);
+    }
+}
+
+void MediaPlayer::moveDownSelected()
+{
+    for (const QModelIndex& index : ui->lv_media->selectionModel()->selectedIndexes()) {
+        QMediaContent temp_ =  player->playlist()->media(index.row());
+        player->playlist()->removeMedia(index.row());
+        player->playlist()->insertMedia(index.row() + 1, temp_);
+        player->playlist()->setCurrentIndex(index.row() + 1);
+    }
 }
