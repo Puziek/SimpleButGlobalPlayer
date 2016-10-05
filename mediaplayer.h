@@ -30,6 +30,7 @@ public slots:
     void startMedia(const QModelIndex& index);
     void openMedia();
     void removeSelectedMedia();
+    void removeAllMedia();
     void moveUpSelected();
     void moveDownSelected();
 

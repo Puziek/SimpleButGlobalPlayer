@@ -25,8 +25,8 @@ public:
     QMediaPlayer::State getState();
 
 public slots:
-    void playClicked();
-    void muteClicked();
+    void onPlayClick();
+    void notifyMuteChanged();
 
     void setState(QMediaPlayer::State state);
     void setVolume(int volume);

@@ -15,8 +15,8 @@ PlayerControls::PlayerControls(QWidget *parent) :
     ui->pb_play->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
     ui->pb_mute->setIcon(style()->standardIcon(QStyle::SP_MediaVolume));
 
-    connect(ui->pb_play, &QPushButton::clicked, this, &PlayerControls::playClicked);
-    connect(ui->pb_mute, &QPushButton::clicked, this, &PlayerControls::muteClicked);
+    connect(ui->pb_play, &QPushButton::clicked, this, &PlayerControls::onPlayClick);
+    connect(ui->pb_mute, &QPushButton::clicked, this, &PlayerControls::notifyMuteChanged);
     connect(ui->pb_next, &QPushButton::clicked, this, &PlayerControls::next);
     connect(ui->pb_previous, &QPushButton::clicked, this, &PlayerControls::previous);
     connect(ui->pb_stop, &QPushButton::clicked, this, &PlayerControls::stop);
@@ -40,23 +40,25 @@ QPushButton *PlayerControls::stopButton()
 
 void PlayerControls::setState(QMediaPlayer::State state)
 {
-    if (state != playerState) {
+    if (state == playerState) {
         playerState = state;
+    }
 
-        switch (state) {
-        case QMediaPlayer::StoppedState:
-            ui->pb_stop->setEnabled(false);
-            ui->pb_play->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-            break;
-        case QMediaPlayer::PlayingState:
-            ui->pb_stop->setEnabled(true);
-            ui->pb_play->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-            break;
-        case QMediaPlayer::PausedState:
-            ui->pb_stop->setEnabled(true);
-            ui->pb_play->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-            break;
-        }
+    playerState = state;
+
+    switch (state) {
+    case QMediaPlayer::StoppedState:
+        ui->pb_stop->setEnabled(false);
+        ui->pb_play->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        break;
+    case QMediaPlayer::PlayingState:
+        ui->pb_stop->setEnabled(true);
+        ui->pb_play->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        break;
+    case QMediaPlayer::PausedState:
+        ui->pb_stop->setEnabled(true);
+        ui->pb_play->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        break;
     }
 }
 
@@ -67,13 +69,15 @@ void PlayerControls::setVolume(int volume)
 
 void PlayerControls::setMuted(bool mute)
 {
-    if (mute != isPlayerMuted) {
-        isPlayerMuted = mute;
-
-        ui->pb_mute->setIcon(style()->standardIcon(mute
-                    ? QStyle::SP_MediaVolumeMuted
-                    : QStyle::SP_MediaVolume));
+    if (mute == isPlayerMuted) {
+        return;
     }
+
+    isPlayerMuted = mute;
+
+    ui->pb_mute->setIcon(style()->standardIcon(mute
+                                               ? QStyle::SP_MediaVolumeMuted
+                                               : QStyle::SP_MediaVolume));
 }
 
 bool PlayerControls::isMuted()
@@ -86,7 +90,7 @@ QMediaPlayer::State PlayerControls::getState()
     return playerState;
 }
 
-void PlayerControls::playClicked()
+void PlayerControls::onPlayClick()
 {
     switch (playerState) {
     case QMediaPlayer::StoppedState:
@@ -99,7 +103,7 @@ void PlayerControls::playClicked()
     }
 }
 
-void PlayerControls::muteClicked()
+void PlayerControls::notifyMuteChanged()
 {
     emit muted(!isPlayerMuted);
 }

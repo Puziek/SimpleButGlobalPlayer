@@ -23,8 +23,8 @@ MediaPlayer::MediaPlayer(QWidget *parent) :
     ui->pc_controlPanel->setMuted(ui->pc_controlPanel->isMuted());
     ui->hs_position->setRange(0, player->duration() / 1000);
 
-    connect(player, SIGNAL(volumeChanged(int)), ui->pc_controlPanel, SLOT(setVolume(int)));
-    connect(player, SIGNAL(mutedChanged(bool)), ui->pc_controlPanel, SLOT(setMuted(bool)));
+    connect(player, &QMediaPlayer::volumeChanged, ui->pc_controlPanel, &PlayerControls::setVolume);
+    connect(player, &QMediaPlayer::mutedChanged, ui->pc_controlPanel, &PlayerControls::setMuted);
     connect(player, &QMediaPlayer::stateChanged, ui->pc_controlPanel, &PlayerControls::setState);
 
     connect(player, &QMediaPlayer::positionChanged, this, [this] (qint64 position) {
@@ -58,11 +58,8 @@ MediaPlayer::MediaPlayer(QWidget *parent) :
     });
 
     connect(ui->actionOpen, &QAction::triggered, this, &MediaPlayer::openMedia);
-    connect(ui->actionRemoveAll, &QAction::triggered, this, [this] {
-        for (int media = player->playlist()->mediaCount() - 1; media >= 0; --media) {
-            player->playlist()->removeMedia(media);
-        }
-    });
+    connect(ui->actionRemoveAll, &QAction::triggered, this, &MediaPlayer::removeAllMedia);
+
     connect(ui->actionRemoveSelected, &QAction::triggered, this, &MediaPlayer::removeSelectedMedia);
     connect(ui->actionMoveDown, &QAction::triggered, this,&MediaPlayer::moveDownSelected);
     connect(ui->actionMoveUp, &QAction::triggered, this,&MediaPlayer::moveUpSelected);
@@ -155,6 +152,13 @@ void MediaPlayer::removeSelectedMedia()
 {
     for (const QModelIndex& index : ui->lv_media->selectionModel()->selectedIndexes()) {
         player->playlist()->removeMedia(index.row());
+    }
+}
+
+void MediaPlayer::removeAllMedia()
+{
+    for (int media = player->playlist()->mediaCount() - 1; media >= 0; --media) {
+        player->playlist()->removeMedia(media);
     }
 }
 
